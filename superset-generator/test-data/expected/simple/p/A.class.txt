@@ -31,6 +31,14 @@ public class p/A {
   public publicInV1()V
   @Lorg/jetbrains/kotlin/tools/kompot/api/annotations/AlternativeVisibility;(version={"1", "2"}, visibility={Lorg/jetbrains/kotlin/tools/kompot/api/annotations/Visibility;.PUBLIC, Lorg/jetbrains/kotlin/tools/kompot/api/annotations/Visibility;.PROTECTED})
 
+  // access flags 0x1
+  public intInV1LongInV2$V0()I
+  @Lorg/jetbrains/kotlin/tools/kompot/api/annotations/ExistsIn;(version="1")
+
+  // access flags 0x1
+  public intInV1LongInV2$V1()J
+  @Lorg/jetbrains/kotlin/tools/kompot/api/annotations/ExistsIn;(version="2")
+
   // access flags 0x9
   public static staticV2()V
   @Lorg/jetbrains/kotlin/tools/kompot/api/annotations/ExistsIn;(version="2")

@@ -12,4 +12,6 @@ public class A {
     public void paramDiff(String s1, String s2) {}
 
     protected void publicInV1() {}
+
+    public long intInV1LongInV2() { return 0; }
 }

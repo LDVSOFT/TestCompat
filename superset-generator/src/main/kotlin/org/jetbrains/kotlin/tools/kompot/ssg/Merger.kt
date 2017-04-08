@@ -187,7 +187,8 @@ class SSGMerger(val logger: Logger, val versionHandler: VersionHandler) {
 
     private fun appendMethod(to: SSGClass, sourceMethod: SSGMethodOrGroup, source: SSGClass) {
         val fqd = sourceMethod.fqd()
-        val targetMethod = to.methodsBySignature[fqd] ?: return to.addMethod(sourceMethod)
+        val (fqdWithoutReturn, fqdReturn) = splitFqdByReturn(fqd)
+        val targetMethod = to.methodsBySignature[fqdWithoutReturn]?.get(fqdReturn) ?: return to.addMethod(sourceMethod)
 
         fun mergeInto(targetMethod: SSGMethod, sourceMethod: SSGMethod): Boolean {
             return tryMerge(S.methods, targetMethod, sourceMethod) {
@@ -231,7 +232,7 @@ class SSGMerger(val logger: Logger, val versionHandler: VersionHandler) {
 
         val result: SSGMethodOrGroup = results.singleOrNull() ?: SSGMethodGroup(results)
 
-        to.methodsBySignature[fqd] = result
+        to.methodsBySignature.getOrPut(fqdWithoutReturn, { mutableMapOf() })[fqdReturn] = result
     }
 
     private fun <T : SSGAnnotated> mergeAnnotations(a: T, b: T) {
@@ -257,7 +258,9 @@ class SSGMerger(val logger: Logger, val versionHandler: VersionHandler) {
     private fun mergeClassesInternals(a: SSGClass, b: SSGClass) {
         a.version = a.version + b.version
         b.methodsBySignature.values.forEach {
-            appendMethod(a, it, b)
+            it.values.forEach {
+                appendMethod(a, it, b)
+            }
         }
         b.fieldsBySignature.values.forEach {
             appendField(a, it, b)

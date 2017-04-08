@@ -18,6 +18,11 @@ import org.objectweb.asm.tree.AnnotationNode
 //
 //}
 
+fun splitFqdByReturn(fqd: String): Pair<String, String> {
+    val pos = fqd.indexOf(')')
+    return fqd.substring(0..pos) to fqd.substring(pos)
+}
+
 class SSGClass(
     override var access: Int,
     override var fqName: String,
@@ -44,7 +49,7 @@ class SSGClass(
     var innerClassesBySignature: Map<String, SSGInnerClassRef> = emptyMap()
     var ownerInfo: OuterClassInfo? = null
 
-    val methodsBySignature = mutableMapOf<String, SSGMethodOrGroup>()
+    val methodsBySignature = mutableMapOf<String, MutableMap<String, SSGMethodOrGroup>>()
     val fieldsBySignature = mutableMapOf<String, SSGField>()
 
     val isMemberClass: Boolean
@@ -56,8 +61,9 @@ class SSGClass(
     }
 
     fun addMethod(node: SSGMethodOrGroup) {
-        check(node.fqd() !in methodsBySignature)
-        methodsBySignature[node.fqd()] = node
+        val (fqdWithoutReturn, fqdReturn) = splitFqdByReturn(node.fqd())
+        check((fqdWithoutReturn !in methodsBySignature) || (fqdReturn !in methodsBySignature[fqdWithoutReturn]!!))
+        methodsBySignature.getOrPut(fqdWithoutReturn, { mutableMapOf() })[fqdReturn] = node
     }
 }
 
