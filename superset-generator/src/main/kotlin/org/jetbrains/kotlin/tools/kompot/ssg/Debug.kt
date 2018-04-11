@@ -77,8 +77,8 @@ fun SSGClass.debugText(): String {
 
         appendln(access.presentableKind + " $fqName {")
 
-        if (methodsBySignature.isNotEmpty()) {
-            methodsBySignature.values.forEach { it.values.joinTo(this, separator = "\n\t", prefix = "\t", postfix = "\n") { it.debugText() } }
+        if (methodsByArgumentsSignatureByReturnType.isNotEmpty()) {
+            methodsByArgumentsSignatureByReturnType.values.forEach { it.values.joinTo(this, separator = "\n\t", prefix = "\t", postfix = "\n") { it.debugText() } }
         }
 
         if (fieldsBySignature.isNotEmpty()) {

@@ -163,7 +163,7 @@ class SSGClassWriter(val configuration: Configuration, val withBodyStubs: Boolea
             }
         }
 
-        node.methodsBySignature.values.forEach {
+        node.methodsByArgumentsSignatureByReturnType.values.forEach {
             val allMethods = it.values.flatMap { it.methods }
 
             allMethods.forEachIndexed { index, method ->

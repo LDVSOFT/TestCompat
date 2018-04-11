@@ -114,8 +114,8 @@ class Rewriter(
                 it.outerName = it.outerName.rewrite(clz.version)
             }
 
-            val methods = clz.methodsBySignature.values.flatMap { it.values.map { it.rewrite(clz.version) } }
-            clz.methodsBySignature.clear()
+            val methods = clz.methodsByArgumentsSignatureByReturnType.values.flatMap { it.values.map { it.rewrite(clz.version) } }
+            clz.methodsByArgumentsSignatureByReturnType.clear()
             methods.forEach { clz.addMethod(it) }
 
             val fields = clz.fieldsBySignature.values.map { it.rewrite(clz.version) }

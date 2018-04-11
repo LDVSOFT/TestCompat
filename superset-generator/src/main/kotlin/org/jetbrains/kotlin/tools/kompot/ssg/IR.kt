@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.tools.kompot.ssg
 
+import jdk.internal.org.objectweb.asm.Type
 import org.jetbrains.kotlin.tools.kompot.api.annotations.Modality
 import org.jetbrains.kotlin.tools.kompot.api.annotations.Visibility
 import org.jetbrains.kotlin.tools.kompot.api.tool.Version
@@ -17,11 +18,6 @@ import org.objectweb.asm.tree.AnnotationNode
 //
 //
 //}
-
-fun splitFqdByReturn(fqd: String): Pair<String, String> {
-    val pos = fqd.indexOf(')')
-    return fqd.substring(0..pos) to fqd.substring(pos)
-}
 
 class SSGClass(
     override var access: Int,
@@ -49,7 +45,7 @@ class SSGClass(
     var innerClassesBySignature: Map<String, SSGInnerClassRef> = emptyMap()
     var ownerInfo: OuterClassInfo? = null
 
-    val methodsBySignature = mutableMapOf<String, MutableMap<String, SSGMethodOrGroup>>()
+    val methodsByArgumentsSignatureByReturnType = mutableMapOf<String, MutableMap<String, SSGMethodOrGroup>>()
     val fieldsBySignature = mutableMapOf<String, SSGField>()
 
     val isMemberClass: Boolean
@@ -61,9 +57,8 @@ class SSGClass(
     }
 
     fun addMethod(node: SSGMethodOrGroup) {
-        val (fqdWithoutReturn, fqdReturn) = splitFqdByReturn(node.fqd())
-        check((fqdWithoutReturn !in methodsBySignature) || (fqdReturn !in methodsBySignature[fqdWithoutReturn]!!))
-        methodsBySignature.getOrPut(fqdWithoutReturn, { mutableMapOf() })[fqdReturn] = node
+        check(!(methodsByArgumentsSignatureByReturnType[node.argsSignature()]?.containsKey(node.returnDesc()) ?: false))
+        methodsByArgumentsSignatureByReturnType.getOrPut(node.argsSignature(), { mutableMapOf() })[node.returnDesc()] = node
     }
 }
 
@@ -91,22 +86,30 @@ class SSGField(
 
 
 interface SSGMethodOrGroup {
+    val desc: String
+    val name: String
     fun fqd(): String
     val methods: List<SSGMethod>
 }
 
+fun SSGMethodOrGroup.argsSignature(): String = name + Type.getArgumentTypes(desc).joinToString(";")
+
+fun SSGMethodOrGroup.returnDesc(): String = Type.getReturnType(desc).descriptor
+
 class SSGMethodGroup(override val methods: List<SSGMethod> = listOf()) : SSGNode<SSGMethodGroup>, SSGMethodOrGroup {
-    override fun fqd(): String {
-        return methods.first().fqd()
-    }
+    override val desc: String get() = methods.first().desc
+
+    override val name: String get() = methods.first().name
+
+    override fun fqd(): String = methods.first().fqd()
 }
 
 val SSGMethodOrGroup.isConstructor get() = methods.first().name == "<init>"
 
 class SSGMethod(
     override var access: Int,
-    var name: String,
-    var desc: String,
+    override var name: String,
+    override var desc: String,
     var signature: String?,
     var exceptions: Array<String>?,
     override var version: Version
